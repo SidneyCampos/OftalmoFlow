@@ -1,0 +1,128 @@
+/* src/styles/theme.css
+   Tema claro confortável (menos cansaço visual) */
+
+:root {
+  --bg: #f3f6fb;
+  --text: #111827;
+  --muted: #6b7280;
+  --card: #ffffff;
+  --border: #e5e7eb;
+
+  --sidebar-bg: #0f2d3a; /* azul petróleo */
+  --sidebar-text: #e7f2f6;
+  --sidebar-muted: #b9d6df;
+
+  --brand: #0f766e; /* verde “saúde” */
+}
+
+body {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+/* Melhorias mobile: mais “tocável” e menos apertado */
+@media (max-width: 576px) {
+  /* Evita zoom automático no iPhone (font < 16) e melhora toque */
+  .form-control,
+  .form-control-sm,
+  .form-select,
+  .accordion-button,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Reduz paddings gerais em telas pequenas */
+  .container-fluid {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  /* Botões do menu ficam maiores no mobile */
+  .app-sidebar .nav-btn {
+    padding: 0.65rem 0.75rem;
+    font-size: 1rem;
+  }
+}
+
+/* Se seu layout tiver um container geral */
+#root {
+  background: var(--bg);
+}
+
+/* Sidebar: você precisa colocar a classe app-sidebar no seu <aside> (já te explico) */
+.app-sidebar {
+  background: var(--sidebar-bg) !important;
+  color: var(--sidebar-text) !important;
+}
+
+.app-sidebar .text-secondary {
+  color: var(--sidebar-muted) !important;
+}
+
+.app-sidebar a,
+.app-sidebar button {
+  color: var(--sidebar-text) !important;
+}
+
+/* Cards padrão */
+.card {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+}
+
+/* Ajuste leve do botão primário pro tom da marca */
+.btn-primary {
+  background: var(--brand) !important;
+  border-color: var(--brand) !important;
+}
+.btn-outline-primary {
+  color: var(--brand) !important;
+  border-color: var(--brand) !important;
+}
+.btn-outline-primary:hover {
+  background: var(--brand) !important;
+  color: #fff !important;
+}
+
+/* ---- Botões do menu lateral (sidebar) ---- */
+.app-sidebar .nav-btn {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: var(--sidebar-text) !important;
+  border: 1px solid rgba(231, 242, 246, 0.35);
+}
+
+.app-sidebar .nav-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(231, 242, 246, 0.55);
+  color: var(--sidebar-text) !important;
+}
+
+/* Estado ativo do NavLink (React Router coloca "active" dependendo da versão) */
+.app-sidebar .nav-btn.active,
+.app-sidebar .nav-btn[aria-current="page"] {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(231, 242, 246, 0.75);
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+/* Botões do menu lateral */
+.sidebar-btn {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #fff !important;
+}
+
+.sidebar-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  color: #fff !important;
+}
+
+.sidebar-btn.active {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  color: #fff !important;
+}

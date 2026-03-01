@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum StatusFila {
+  NA_FILA
+  CHAMADO
+  FINALIZADO
+  CANCELADO
+}
+
+model Paciente {
+  id_paciente  Int       @id @default(autoincrement())
+  p_nome       String
+  p_mae        String?
+  p_cpf        String?
+  p_cpf_digits String?
+  p_rg         String?
+  p_endereco   String?
+  p_cidade     String?
+  p_fone       String?
+  p_nascimento DateTime? @db.Date
+  p_data       DateTime? @db.Date
+
+  consultas Consulta[]
+  filas     FilaAtendimento[]
+
+  @@index([p_nome])
+  @@index([p_cpf_digits])
+}
+
+model Consulta {
+  id_consulta Int      @id @default(autoincrement())
+  id_paciente Int
+  paciente    Paciente @relation(fields: [id_paciente], references: [id_paciente], onDelete: Cascade)
+
+  c_queixaPessoal     String?
+  c_historicoPessoal  String?
+  c_historicoFamiliar String?
+  c_acuidadeOd        String?
+  c_acuidadeOe        String?
+  c_bioOd             String?
+  c_bioOe             String?
+  c_fundoOlhoOd       String?
+  c_fundoOlhoOe       String?
+  c_pressaoOcularOd   String?
+  c_pressaoOcularOe   String?
+  c_condutaConsulta   String?
+  c_especialidade     String   @default("Geral")
+  c_diagnostico       String   @default("")
+  c_medicacoesEmUso   String   @default("")
+  c_alergias          String   @default("")
+  c_receita           String   @default("")
+  c_exameFisico       String   @default("")
+  c_geral             String?
+  c_dataConsulta      DateTime? @db.Date
+
+  created_at DateTime @default(now())
+
+  @@index([id_paciente])
+  @@index([c_dataConsulta])
+}
+
+model FilaAtendimento {
+  id_fila     Int      @id @default(autoincrement())
+  id_paciente Int
+  paciente    Paciente @relation(fields: [id_paciente], references: [id_paciente])
+
+  dia    DateTime   @db.Date
+  status StatusFila @default(NA_FILA)
+
+  chegada_em    DateTime  @default(now())
+  chamado_em    DateTime?
+  finalizado_em DateTime?
+
+  observacao String?
+
+  @@index([dia, status])
+  @@index([id_paciente])
+}

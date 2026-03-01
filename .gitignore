@@ -1,0 +1,35 @@
+**/node_modules
+**/.env
+**/dist
+**/.vite
+
+# node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env (segredos)
+.env
+backend/.env
+frontend/.env
+
+# builds
+dist/
+build/
+frontend/dist/
+backend/dist/
+
+# prisma / db extras
+*.db
+*.sqlite
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# logs
+logs/
+*.log
