@@ -7,7 +7,7 @@
 // - Após salvar -> recarrega detalhes e mantém histórico atualizado
 
 import React, { useEffect, useMemo, useState } from "react";
-import { apiGet, apiPut } from "../api";
+import { apiGet, apiPut, apiDelete } from "../api";
 
 function normalizeStr(s) {
   return String(s || "")
@@ -46,7 +46,12 @@ function dateToInput(dateValue) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-export default function PacienteModal({ aberto, onFechar, idPaciente }) {
+export default function PacienteModal({
+  aberto,
+  onFechar,
+  idPaciente,
+  onMudou,
+}) {
   const [loading, setLoading] = useState(false);
 
   const [paciente, setPaciente] = useState(null);
@@ -165,11 +170,39 @@ export default function PacienteModal({ aberto, onFechar, idPaciente }) {
       alert("Dados do paciente atualizados!");
       setEditando(false);
       await carregar(); // recarrega e sincroniza
+      if (typeof onMudou === "function") onMudou();
     } catch (e) {
       console.error(e);
       alert("Erro ao salvar alterações. Veja o console.");
     } finally {
       setSalvando(false);
+    }
+  }
+
+  async function excluirPaciente() {
+    if (!paciente?.id_paciente) return;
+
+    // Confirmação bem explícita (para evitar exclusão errada)
+    const ok = window.confirm(
+      `ATENÇÃO!\n\nVocê vai EXCLUIR o paciente:\n` +
+        `Ficha: ${paciente.id_paciente}\n` +
+        `Nome: ${paciente.p_nome}\n\n` +
+        `Isso também remove histórico (consultas) e registros de fila desse paciente.\n\n` +
+        `Deseja continuar?`,
+    );
+
+    if (!ok) return;
+
+    try {
+      await apiDelete(`/api/pacientes/${paciente.id_paciente}`);
+      alert("Paciente excluído com sucesso!");
+      onFechar();
+      if (typeof onMudou === "function") onMudou();
+    } catch (e) {
+      console.error(e);
+      alert(
+        `Não foi possível excluir.\n\nMotivo: ${e?.message || "Erro desconhecido"}`,
+      );
     }
   }
 
@@ -209,16 +242,26 @@ export default function PacienteModal({ aberto, onFechar, idPaciente }) {
               ) : null}
             </div>
           </div>
-
           <div className="d-flex gap-2">
             {!editando ? (
-              <button
-                className="btn btn-outline-primary btn-sm"
-                onClick={() => setEditando(true)}
-                disabled={loading}
-              >
-                Editar
-              </button>
+              <>
+                <button
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={() => setEditando(true)}
+                  disabled={loading}
+                >
+                  Editar
+                </button>
+
+                <button
+                  className="btn btn-outline-danger btn-sm"
+                  onClick={excluirPaciente}
+                  disabled={loading}
+                  title="Exclui o paciente (com confirmação)"
+                >
+                  Excluir paciente
+                </button>
+              </>
             ) : (
               <>
                 <button
@@ -238,13 +281,6 @@ export default function PacienteModal({ aberto, onFechar, idPaciente }) {
                 </button>
               </>
             )}
-
-            <button
-              className="btn btn-outline-secondary btn-sm"
-              onClick={onFechar}
-            >
-              Fechar
-            </button>
           </div>
         </div>
 
@@ -434,12 +470,13 @@ export default function PacienteModal({ aberto, onFechar, idPaciente }) {
                           </b>
                           {"  "}
                           <span className="text-secondary">
-                            — #{c.id_consulta} —{" "}
-                            {c.c_especialidade || "Geral"} —{" "}
-                            {(c.c_diagnostico || c.c_queixaPessoal || "(sem resumo)").slice(
-                              0,
-                              60,
-                            )}
+                            — #{c.id_consulta} — {c.c_especialidade || "Geral"}{" "}
+                            —{" "}
+                            {(
+                              c.c_diagnostico ||
+                              c.c_queixaPessoal ||
+                              "(sem resumo)"
+                            ).slice(0, 60)}
                           </span>
                         </summary>
 
@@ -460,12 +497,14 @@ export default function PacienteModal({ aberto, onFechar, idPaciente }) {
                                   <b>Diagnóstico:</b> {c.c_diagnostico || "-"}
                                 </div>
                                 <div className="mt-1">
-                                  <b>Conduta / Plano:</b> {c.c_condutaConsulta || "-"}
+                                  <b>Conduta / Plano:</b>{" "}
+                                  {c.c_condutaConsulta || "-"}
                                 </div>
 
                                 <div className="row g-2 mt-1">
                                   <div className="col-md-6">
-                                    <b>Medicações em uso:</b> {c.c_medicacoesEmUso || "-"}
+                                    <b>Medicações em uso:</b>{" "}
+                                    {c.c_medicacoesEmUso || "-"}
                                   </div>
                                   <div className="col-md-6">
                                     <b>Alergias:</b> {c.c_alergias || "-"}
@@ -474,7 +513,8 @@ export default function PacienteModal({ aberto, onFechar, idPaciente }) {
 
                                 {c.c_exameFisico ? (
                                   <div className="mt-1">
-                                    <b>Exame físico / Achados:</b> {c.c_exameFisico}
+                                    <b>Exame físico / Achados:</b>{" "}
+                                    {c.c_exameFisico}
                                   </div>
                                 ) : null}
 
@@ -492,16 +532,20 @@ export default function PacienteModal({ aberto, onFechar, idPaciente }) {
 
                                     <div className="row g-2 mt-1">
                                       <div className="col-md-6">
-                                        <b>Acuidade OD:</b> {c.c_acuidadeOd || "-"}
+                                        <b>Acuidade OD:</b>{" "}
+                                        {c.c_acuidadeOd || "-"}
                                       </div>
                                       <div className="col-md-6">
-                                        <b>Acuidade OE:</b> {c.c_acuidadeOe || "-"}
+                                        <b>Acuidade OE:</b>{" "}
+                                        {c.c_acuidadeOe || "-"}
                                       </div>
                                       <div className="col-md-6">
-                                        <b>Pressão OD:</b> {c.c_pressaoOcularOd || "-"}
+                                        <b>Pressão OD:</b>{" "}
+                                        {c.c_pressaoOcularOd || "-"}
                                       </div>
                                       <div className="col-md-6">
-                                        <b>Pressão OE:</b> {c.c_pressaoOcularOe || "-"}
+                                        <b>Pressão OE:</b>{" "}
+                                        {c.c_pressaoOcularOe || "-"}
                                       </div>
                                     </div>
 
@@ -519,10 +563,12 @@ export default function PacienteModal({ aberto, onFechar, idPaciente }) {
                                             <b>BIO OE:</b> {c.c_bioOe || "-"}
                                           </div>
                                           <div className="col-md-6">
-                                            <b>Fundo OD:</b> {c.c_fundoOlhoOd || "-"}
+                                            <b>Fundo OD:</b>{" "}
+                                            {c.c_fundoOlhoOd || "-"}
                                           </div>
                                           <div className="col-md-6">
-                                            <b>Fundo OE:</b> {c.c_fundoOlhoOe || "-"}
+                                            <b>Fundo OE:</b>{" "}
+                                            {c.c_fundoOlhoOe || "-"}
                                           </div>
                                         </div>
                                       </div>

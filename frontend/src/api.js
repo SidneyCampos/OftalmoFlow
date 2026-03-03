@@ -72,6 +72,14 @@ export async function apiPut(path, body) {
 }
 
 
+export async function apiDelete(path) {
+  const res = await fetch(normalizeApiPath(path), {
+    method: "DELETE",
+  });
+  return parseResponse(res);
+}
+
+
 async function parseBlobResponse(res) {
   const ct = res.headers.get("content-type") || "";
   if (!res.ok) {

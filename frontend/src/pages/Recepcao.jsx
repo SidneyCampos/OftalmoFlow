@@ -131,10 +131,7 @@ export default function Recepcao() {
           </div>
         </div>
 
-        <button
-          className="btn btn-primary"
-          onClick={() => setShowForm(true)}
-        >
+        <button className="btn btn-primary" onClick={() => setShowForm(true)}>
           + Cadastrar paciente
         </button>
       </div>
@@ -181,11 +178,20 @@ export default function Recepcao() {
                             <div className="fw-bold" style={{ fontSize: 16 }}>
                               {p.p_nome}
                             </div>
-                            <div className="text-secondary" style={{ fontSize: 12 }}>
-                              Ficha: <span className="fw-semibold">{p.id_paciente}</span>
+                            <div
+                              className="text-secondary"
+                              style={{ fontSize: 12 }}
+                            >
+                              Ficha:{" "}
+                              <span className="fw-semibold">
+                                {p.id_paciente}
+                              </span>
                               {p.p_cpf ? ` • CPF: ${p.p_cpf}` : ""}
                             </div>
-                            <div className="text-secondary" style={{ fontSize: 12 }}>
+                            <div
+                              className="text-secondary"
+                              style={{ fontSize: 12 }}
+                            >
                               Mãe: {p.p_mae || "-"}
                             </div>
                           </div>
@@ -249,9 +255,39 @@ export default function Recepcao() {
                           title="Clique para ver detalhes e histórico"
                         >
                           <td className="fw-bold">{p.id_paciente}</td>
-                          <td>{p.p_nome}</td>
+                          <td>
+                            <div>{p.p_nome}</div>
+
+                            {busca && p._match?.field ? (
+                              <div
+                                className="text-secondary"
+                                style={{ fontSize: 12, marginTop: 2 }}
+                              >
+                                Encontrado por:{" "}
+                                <strong>{p._match.field}</strong>
+                                {p._match.value ? (
+                                  <span>
+                                    {" "}
+                                    — {String(p._match.value).slice(0, 40)}
+                                  </span>
+                                ) : null}
+                              </div>
+                            ) : null}
+                          </td>
                           <td>{p.p_mae || "-"}</td>
-                          <td>{p.p_cpf || "-"}</td>
+                          <td>
+                            <div>{p.p_cpf || "-"}</div>
+                            {busca &&
+                            p._match?.field === "TELEFONE" &&
+                            p.p_fone ? (
+                              <div
+                                className="text-secondary"
+                                style={{ fontSize: 12, marginTop: 2 }}
+                              >
+                                Tel: {p.p_fone}
+                              </div>
+                            ) : null}
+                          </td>
                           <td>
                             <BadgeStatus naFila={naFila} />
                           </td>
@@ -273,7 +309,10 @@ export default function Recepcao() {
 
                     {pacientes.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="text-center text-secondary py-4">
+                        <td
+                          colSpan={6}
+                          className="text-center text-secondary py-4"
+                        >
                           Nenhum paciente encontrado.
                         </td>
                       </tr>
@@ -291,6 +330,7 @@ export default function Recepcao() {
         aberto={detalheAberto}
         onFechar={fecharDetalhes}
         idPaciente={idPacienteDetalhe}
+        onMudou={carregar}
       />
 
       {/* Modal de cadastro */}
@@ -320,7 +360,9 @@ export default function Recepcao() {
                   <input
                     className="form-control"
                     value={form.p_nome}
-                    onChange={(e) => setForm({ ...form, p_nome: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, p_nome: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -330,7 +372,9 @@ export default function Recepcao() {
                   <input
                     className="form-control"
                     value={form.p_mae}
-                    onChange={(e) => setForm({ ...form, p_mae: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, p_mae: e.target.value })
+                    }
                   />
                 </div>
 
@@ -339,7 +383,9 @@ export default function Recepcao() {
                   <input
                     className="form-control"
                     value={form.p_cpf}
-                    onChange={(e) => setForm({ ...form, p_cpf: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, p_cpf: e.target.value })
+                    }
                   />
                 </div>
 
@@ -357,7 +403,9 @@ export default function Recepcao() {
                   <input
                     className="form-control"
                     value={form.p_fone}
-                    onChange={(e) => setForm({ ...form, p_fone: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, p_fone: e.target.value })
+                    }
                   />
                 </div>
 
@@ -389,7 +437,9 @@ export default function Recepcao() {
                   <input
                     className="form-control"
                     value={form.p_cidade}
-                    onChange={(e) => setForm({ ...form, p_cidade: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, p_cidade: e.target.value })
+                    }
                   />
                 </div>
               </div>
