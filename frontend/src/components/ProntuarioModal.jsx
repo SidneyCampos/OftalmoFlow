@@ -42,7 +42,10 @@ function downloadBlob(blob, filename) {
 
 export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
   const paciente = filaItem?.paciente;
-  const idade = useMemo(() => calcAge(paciente?.p_nascimento), [paciente?.p_nascimento]);
+  const idade = useMemo(
+    () => calcAge(paciente?.p_nascimento),
+    [paciente?.p_nascimento],
+  );
 
   const [historico, setHistorico] = useState([]);
   const [salvando, setSalvando] = useState(false);
@@ -80,8 +83,8 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
   });
 
   const CLINICA = {
-    nome: "OftalmoFlow",
-    endereco: "",
+    nome: "CREOI",
+    endereco: "Centro de Referência em Oftalmologia de Iguatama",
     telefones: "",
     redes: "",
   };
@@ -169,12 +172,15 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
     if (!ok) return;
 
     try {
+      // abre impressão automaticamente
+      imprimirHtml();
+
       await apiPatch(`/api/fila/${filaItem.id_fila}`, { acao: "finalizar" });
-      alert("Consulta finalizada. Paciente saiu da fila.");
+
       onFechar(true);
     } catch (e) {
       console.error(e);
-      alert("Salvou prontuário, mas falhou ao finalizar na fila.");
+      alert("Erro ao finalizar consulta.");
     }
   }
 
@@ -203,7 +209,7 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
   function imprimirHtml() {
     printProntuario({
       clinica: CLINICA,
-      logoUrl: null,
+      logoUrl: "/logo-creoi.png",
       paciente: {
         id_paciente: paciente?.id_paciente,
         p_nome: paciente?.p_nome,
@@ -303,7 +309,9 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                       <input
                         className="form-control form-control-sm"
                         value={form.c_especialidade}
-                        onChange={(e) => setField("c_especialidade", e.target.value)}
+                        onChange={(e) =>
+                          setField("c_especialidade", e.target.value)
+                        }
                         placeholder="Ex.: Clínica geral, Geriatria, Oftalmologia"
                       />
                     </div>
@@ -316,7 +324,9 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                         className="form-control form-control-sm"
                         rows={2}
                         value={form.c_queixaPessoal}
-                        onChange={(e) => setField("c_queixaPessoal", e.target.value)}
+                        onChange={(e) =>
+                          setField("c_queixaPessoal", e.target.value)
+                        }
                         placeholder="Ex.: dor, febre, visão embaçada, tontura..."
                       />
                     </div>
@@ -329,7 +339,9 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                         className="form-control form-control-sm"
                         rows={2}
                         value={form.c_diagnostico}
-                        onChange={(e) => setField("c_diagnostico", e.target.value)}
+                        onChange={(e) =>
+                          setField("c_diagnostico", e.target.value)
+                        }
                         placeholder="Ex.: HAS descompensada, conjuntivite, IVAS..."
                       />
                     </div>
@@ -342,7 +354,9 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                         className="form-control form-control-sm"
                         rows={2}
                         value={form.c_condutaConsulta}
-                        onChange={(e) => setField("c_condutaConsulta", e.target.value)}
+                        onChange={(e) =>
+                          setField("c_condutaConsulta", e.target.value)
+                        }
                         placeholder="Ex.: medicação, retorno, exames, orientações..."
                       />
                     </div>
@@ -355,7 +369,9 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                         className="form-control form-control-sm"
                         rows={2}
                         value={form.c_medicacoesEmUso}
-                        onChange={(e) => setField("c_medicacoesEmUso", e.target.value)}
+                        onChange={(e) =>
+                          setField("c_medicacoesEmUso", e.target.value)
+                        }
                         placeholder="Se não usa, escreva: Nega"
                       />
                     </div>
@@ -378,8 +394,9 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                         className="alert alert-info py-2 mb-0"
                         style={{ fontSize: 12 }}
                       >
-                        <b>Qualidade dos dados:</b> estes campos são obrigatórios para
-                        gerar relatórios melhores na dashboard.
+                        <b>Qualidade dos dados:</b> estes campos são
+                        obrigatórios para gerar relatórios melhores na
+                        dashboard.
                       </div>
                     </div>
                   </div>
@@ -408,7 +425,9 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                 data-bs-parent="#accProntuario"
               >
                 <div className="accordion-body">
-                  <label className="form-label small mb-1">Texto da receita</label>
+                  <label className="form-label small mb-1">
+                    Texto da receita
+                  </label>
                   <textarea
                     className="form-control form-control-sm"
                     rows={5}
@@ -538,27 +557,37 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                     </div>
 
                     <div className="col-6">
-                      <label className="form-label small mb-1">Acuidade OD</label>
+                      <label className="form-label small mb-1">
+                        Acuidade OD
+                      </label>
                       <input
                         className="form-control form-control-sm"
                         value={form.c_acuidadeOd}
-                        onChange={(e) => setField("c_acuidadeOd", e.target.value)}
+                        onChange={(e) =>
+                          setField("c_acuidadeOd", e.target.value)
+                        }
                         placeholder="Ex.: 20/20"
                       />
                     </div>
 
                     <div className="col-6">
-                      <label className="form-label small mb-1">Acuidade OE</label>
+                      <label className="form-label small mb-1">
+                        Acuidade OE
+                      </label>
                       <input
                         className="form-control form-control-sm"
                         value={form.c_acuidadeOe}
-                        onChange={(e) => setField("c_acuidadeOe", e.target.value)}
+                        onChange={(e) =>
+                          setField("c_acuidadeOe", e.target.value)
+                        }
                         placeholder="Ex.: 20/40"
                       />
                     </div>
 
                     <div className="col-6">
-                      <label className="form-label small mb-1">Pressão OD</label>
+                      <label className="form-label small mb-1">
+                        Pressão OD
+                      </label>
                       <input
                         className="form-control form-control-sm"
                         value={form.c_pressaoOcularOd}
@@ -570,7 +599,9 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                     </div>
 
                     <div className="col-6">
-                      <label className="form-label small mb-1">Pressão OE</label>
+                      <label className="form-label small mb-1">
+                        Pressão OE
+                      </label>
                       <input
                         className="form-control form-control-sm"
                         value={form.c_pressaoOcularOe}
@@ -607,7 +638,9 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                         className="form-control form-control-sm"
                         rows={2}
                         value={form.c_fundoOlhoOd}
-                        onChange={(e) => setField("c_fundoOlhoOd", e.target.value)}
+                        onChange={(e) =>
+                          setField("c_fundoOlhoOd", e.target.value)
+                        }
                       />
                     </div>
 
@@ -617,7 +650,9 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                         className="form-control form-control-sm"
                         rows={2}
                         value={form.c_fundoOlhoOe}
-                        onChange={(e) => setField("c_fundoOlhoOe", e.target.value)}
+                        onChange={(e) =>
+                          setField("c_fundoOlhoOe", e.target.value)
+                        }
                       />
                     </div>
                   </div>
@@ -646,7 +681,9 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                 data-bs-parent="#accProntuario"
               >
                 <div className="accordion-body">
-                  <label className="form-label small mb-1">Observações gerais</label>
+                  <label className="form-label small mb-1">
+                    Observações gerais
+                  </label>
                   <textarea
                     className="form-control form-control-sm"
                     rows={4}
@@ -695,13 +732,24 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
                         >
                           <div className="d-flex justify-content-between align-items-start gap-2">
                             <div>
-                              <div className="fw-semibold" style={{ fontSize: 13 }}>
-                                #{c.id_consulta} — {toDateBR(c.c_dataConsulta || c.created_at)}
+                              <div
+                                className="fw-semibold"
+                                style={{ fontSize: 13 }}
+                              >
+                                #{c.id_consulta} —{" "}
+                                {toDateBR(c.c_dataConsulta || c.created_at)}
                               </div>
-                              <div className="text-secondary" style={{ fontSize: 12 }}>
-                                <b>{c.c_especialidade || "Geral"}</b> • {c.c_diagnostico || "(sem diagnóstico)"}
+                              <div
+                                className="text-secondary"
+                                style={{ fontSize: 12 }}
+                              >
+                                <b>{c.c_especialidade || "Geral"}</b> •{" "}
+                                {c.c_diagnostico || "(sem diagnóstico)"}
                               </div>
-                              <div className="text-secondary" style={{ fontSize: 12 }}>
+                              <div
+                                className="text-secondary"
+                                style={{ fontSize: 12 }}
+                              >
                                 {c.c_queixaPessoal
                                   ? c.c_queixaPessoal.slice(0, 110)
                                   : "(sem queixa)"}
@@ -736,8 +784,8 @@ export default function ProntuarioModal({ aberto, onFechar, filaItem }) {
           </div>
 
           <div className="text-secondary mt-2" style={{ fontSize: 12 }}>
-            Dica: deixe “Essencial” bem preenchido. Os blocos opcionais são “quando
-            precisar”.
+            Dica: deixe “Essencial” bem preenchido. Os blocos opcionais são
+            “quando precisar”.
           </div>
         </div>
 

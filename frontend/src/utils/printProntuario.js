@@ -273,7 +273,8 @@ export function printProntuario({ clinica, logoUrl, paciente, consulta }) {
     </div>
 
     <div class="foot">
-      Prontuário gerado pelo sistema OftalmoFlow • ${escapeHtml(clinica?.nome || "")}
+      Prontuário gerado pelo sistema CREOI
+      Centro de Referência em Oftalmologia de Iguatama • ${escapeHtml(clinica?.nome || "")}
     </div>
 
   </div>
