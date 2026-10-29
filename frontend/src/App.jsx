@@ -10,6 +10,7 @@ import {
 import Recepcao from "./pages/Recepcao";
 import Medico from "./pages/Medico";
 import Dashboard from "./pages/Dashboard";
+import Lembretes from "./pages/Lembretes";
 
 export default function App() {
   return (
@@ -88,6 +89,10 @@ function Shell() {
           <NavLink className="btn nav-btn" to="/dashboard">
             Dashboard
           </NavLink>
+
+          <NavLink className="btn nav-btn" to="/lembretes">
+            Lembretes
+          </NavLink>
         </div>
       </aside>
 
@@ -125,6 +130,10 @@ function Shell() {
           <button className="btn nav-btn" onClick={() => go("/dashboard")}>
             Dashboard
           </button>
+
+          <button className="btn nav-btn" onClick={() => go("/lembretes")}>
+            Lembretes
+          </button>
         </div>
       </div>
 
@@ -133,6 +142,7 @@ function Shell() {
           <Route path="/" element={<Recepcao />} />
           <Route path="/medico" element={<Medico />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/lembretes" element={<Lembretes />} />
         </Routes>
       </main>
     </div>

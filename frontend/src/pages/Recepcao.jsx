@@ -32,12 +32,18 @@ export default function Recepcao() {
   const [form, setForm] = useState({
     p_nome: "",
     p_mae: "",
+    p_pai: "",
+    p_sexo: "",
+    p_estado_civil: "",
+    p_profissao: "",
+    p_naturalidade: "",
+    p_documento: "",
     p_cpf: "",
+    p_rg: "",
     p_fone: "",
     p_nascimento: "",
     p_endereco: "",
     p_cidade: "",
-    p_rg: "",
   });
 
   async function carregar() {
@@ -98,18 +104,24 @@ export default function Recepcao() {
       setForm({
         p_nome: "",
         p_mae: "",
+        p_pai: "",
+        p_sexo: "",
+        p_estado_civil: "",
+        p_profissao: "",
+        p_naturalidade: "",
+        p_documento: "",
         p_cpf: "",
+        p_rg: "",
         p_fone: "",
         p_nascimento: "",
         p_endereco: "",
         p_cidade: "",
-        p_rg: "",
       });
       alert(`Paciente cadastrado! Ficha: ${novo.id_paciente}`);
       await carregar();
     } catch (e2) {
       console.error(e2);
-      alert("Erro ao cadastrar. Verifique os campos.");
+      alert(`Erro ao cadastrar. ${e2?.message || "Verifique os campos."}`);
     }
   }
 
@@ -374,6 +386,77 @@ export default function Recepcao() {
                     value={form.p_mae}
                     onChange={(e) =>
                       setForm({ ...form, p_mae: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="col-md-4">
+                  <label className="form-label">Pai</label>
+                  <input
+                    className="form-control"
+                    value={form.p_pai}
+                    onChange={(e) =>
+                      setForm({ ...form, p_pai: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="col-md-2">
+                  <label className="form-label">Sexo</label>
+                  <select
+                    className="form-select"
+                    value={form.p_sexo}
+                    onChange={(e) =>
+                      setForm({ ...form, p_sexo: e.target.value })
+                    }
+                  >
+                    <option value="">--</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Outro">Outro</option>
+                  </select>
+                </div>
+
+                <div className="col-md-4">
+                  <label className="form-label">Documento</label>
+                  <input
+                    className="form-control"
+                    value={form.p_documento}
+                    onChange={(e) =>
+                      setForm({ ...form, p_documento: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="col-md-4">
+                  <label className="form-label">Estado civil</label>
+                  <input
+                    className="form-control"
+                    value={form.p_estado_civil}
+                    onChange={(e) =>
+                      setForm({ ...form, p_estado_civil: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="col-md-4">
+                  <label className="form-label">Profissão</label>
+                  <input
+                    className="form-control"
+                    value={form.p_profissao}
+                    onChange={(e) =>
+                      setForm({ ...form, p_profissao: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="col-md-4">
+                  <label className="form-label">Naturalidade</label>
+                  <input
+                    className="form-control"
+                    value={form.p_naturalidade}
+                    onChange={(e) =>
+                      setForm({ ...form, p_naturalidade: e.target.value })
                     }
                   />
                 </div>

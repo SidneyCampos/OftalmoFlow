@@ -195,12 +195,17 @@ export function printProntuario({ clinica, logoUrl, paciente, consulta }) {
           ${line("Ficha", String(paciente?.id_paciente ?? "-"))}
           ${line("Nome", paciente?.p_nome)}
           ${line("CPF", paciente?.p_cpf)}
+          ${line("Documento", paciente?.p_documento)}
           ${line("Telefone", paciente?.p_fone)}
         </div>
 
         <div>
           ${line("Data", dataConsulta)}
           ${line("Nascimento", idade !== null ? `${nascimento} (${idade} anos)` : nascimento)}
+          ${line("Sexo", paciente?.p_sexo)}
+          ${line("Estado civil", paciente?.p_estado_civil)}
+          ${line("Profissão", paciente?.p_profissao)}
+          ${line("Naturalidade", paciente?.p_naturalidade)}
           ${line("Especialidade", consulta?.c_especialidade)}
         </div>
       </div>

@@ -20,12 +20,18 @@ model Paciente {
   p_mae        String?
   p_cpf        String?
   p_cpf_digits String?
-  p_rg         String?
-  p_endereco   String?
-  p_cidade     String?
-  p_fone       String?
-  p_nascimento DateTime? @db.Date
-  p_data       DateTime? @db.Date
+  p_rg          String?
+  p_documento   String?
+  p_sexo        String?
+  p_pai         String?
+  p_estado_civil String?
+  p_profissao   String?
+  p_naturalidade String?
+  p_endereco    String?
+  p_cidade      String?
+  p_fone        String?
+  p_nascimento  DateTime? @db.Date
+  p_data        DateTime? @db.Date
 
   consultas Consulta[]
   filas     FilaAtendimento[]

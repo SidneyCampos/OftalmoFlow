@@ -34,6 +34,17 @@ function normalizeForSearch(s) {
         .replace(/[\u0300-\u036f]/g, ""); // remove acentos
 }
 
+function normalizeNullableString(value) {
+    const cleaned = String(value || "").trim();
+    return cleaned === "" ? null : cleaned;
+}
+
+function parseDate(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function tokensDaBusca(busca) {
     const b = normalizaEspacos(busca);
     if (!b) return [];
@@ -188,6 +199,48 @@ function scorePaciente(p, tokens, buscaDigits) {
 }
 
 /** -------------------- GET /api/pacientes -------------------- */
+router.get("/lembretes", async (req, res) => {
+    try {
+        const agora = new Date();
+        const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+        const anoAnterior = hoje.getFullYear() - 1;
+        const inicioMesUmAnoAtras = new Date(anoAnterior, hoje.getMonth(), 1);
+        const inicioProximoMesUmAnoAtras = new Date(anoAnterior, hoje.getMonth() + 1, 1);
+
+        const [cadastrosUmAno, aniversariantes] = await Promise.all([
+            prisma.paciente.findMany({
+                where: {
+                    p_data: {
+                        gte: inicioMesUmAnoAtras,
+                        lt: inicioProximoMesUmAnoAtras,
+                    },
+                },
+                select: {
+                    id_paciente: true,
+                    p_nome: true,
+                    p_fone: true,
+                    p_data: true,
+                },
+                orderBy: [{ p_nome: "asc" }, { id_paciente: "asc" }],
+            }),
+            prisma.$queryRaw`
+                SELECT "id_paciente", "p_nome", "p_fone", "p_nascimento"
+                FROM "Paciente"
+                WHERE "p_nascimento" IS NOT NULL
+                  AND EXTRACT(MONTH FROM "p_nascimento") = ${hoje.getMonth() + 1}
+                  AND EXTRACT(DAY FROM "p_nascimento") = ${hoje.getDate()}
+                ORDER BY "p_nome" ASC, "id_paciente" ASC
+            `,
+        ]);
+
+        return res.json({ cadastrosUmAno, aniversariantes });
+    } catch (e) {
+        console.error("Erro ao carregar lembretes de pacientes:", e);
+        return res.status(500).json({ error: "Erro ao carregar lembretes." });
+    }
+});
+
+/** -------------------- GET /api/pacientes -------------------- */
 router.get("/", async (req, res) => {
     try {
         const buscaRaw = String(req.query.busca || "");
@@ -198,7 +251,7 @@ router.get("/", async (req, res) => {
         // Sem busca: últimos cadastrados primeiro
         if (!busca) {
             const pacientes = await prisma.paciente.findMany({
-                orderBy: [{ p_data: "desc" }, { id_paciente: "desc" }],
+                orderBy: [{ p_data: { sort: "desc", nulls: "last" } }, { id_paciente: "desc" }],
                 take: 100,
             });
             return res.json(pacientes);
@@ -380,6 +433,12 @@ router.post("/", async (req, res) => {
             p_mae: z.string().optional().nullable(),
             p_cpf: z.string().optional().nullable(),
             p_rg: z.string().optional().nullable(),
+            p_documento: z.string().optional().nullable(),
+            p_sexo: z.string().optional().nullable(),
+            p_pai: z.string().optional().nullable(),
+            p_estado_civil: z.string().optional().nullable(),
+            p_profissao: z.string().optional().nullable(),
+            p_naturalidade: z.string().optional().nullable(),
             p_endereco: z.string().optional().nullable(),
             p_cidade: z.string().optional().nullable(),
             p_fone: z.string().optional().nullable(),
@@ -387,19 +446,33 @@ router.post("/", async (req, res) => {
         });
 
         const data = schema.parse(req.body);
+        const nome = String(data.p_nome || "").trim();
+        if (nome.length < 2) throw new Error("Nome inválido.");
+
+        const nascimento = parseDate(data.p_nascimento);
+        if (data.p_nascimento && nascimento === null) {
+            throw new Error("Data de nascimento inválida.");
+        }
+
         const cpfDigits = soDigitos(data.p_cpf);
 
         const paciente = await prisma.paciente.create({
             data: {
-                p_nome: data.p_nome,
-                p_mae: data.p_mae || null,
-                p_cpf: data.p_cpf || null,
+                p_nome: nome,
+                p_mae: normalizeNullableString(data.p_mae),
+                p_cpf: normalizeNullableString(data.p_cpf),
                 p_cpf_digits: cpfDigits || null,
-                p_rg: data.p_rg || null,
-                p_endereco: data.p_endereco || null,
-                p_cidade: data.p_cidade || null,
-                p_fone: data.p_fone || null,
-                p_nascimento: data.p_nascimento ? new Date(data.p_nascimento) : null,
+                p_rg: normalizeNullableString(data.p_rg),
+                p_documento: normalizeNullableString(data.p_documento),
+                p_sexo: normalizeNullableString(data.p_sexo),
+                p_pai: normalizeNullableString(data.p_pai),
+                p_estado_civil: normalizeNullableString(data.p_estado_civil),
+                p_profissao: normalizeNullableString(data.p_profissao),
+                p_naturalidade: normalizeNullableString(data.p_naturalidade),
+                p_endereco: normalizeNullableString(data.p_endereco),
+                p_cidade: normalizeNullableString(data.p_cidade),
+                p_fone: normalizeNullableString(data.p_fone),
+                p_nascimento: nascimento,
                 p_data: new Date(),
             },
         });
@@ -407,6 +480,14 @@ router.post("/", async (req, res) => {
         res.status(201).json(paciente);
     } catch (e) {
         console.error(e);
+        if (e instanceof z.ZodError) {
+            return res.status(400).json({
+                error: e.errors.map((err) => err.message).join("; ") || "Dados inválidos para cadastro.",
+            });
+        }
+        if (e instanceof Error) {
+            return res.status(400).json({ error: e.message });
+        }
         res.status(400).json({ error: "Dados inválidos para cadastro." });
     }
 });
@@ -422,6 +503,12 @@ router.put("/:id_paciente", async (req, res) => {
             p_mae: z.string().optional().nullable(),
             p_cpf: z.string().optional().nullable(),
             p_rg: z.string().optional().nullable(),
+            p_documento: z.string().optional().nullable(),
+            p_sexo: z.string().optional().nullable(),
+            p_pai: z.string().optional().nullable(),
+            p_estado_civil: z.string().optional().nullable(),
+            p_profissao: z.string().optional().nullable(),
+            p_naturalidade: z.string().optional().nullable(),
             p_endereco: z.string().optional().nullable(),
             p_cidade: z.string().optional().nullable(),
             p_fone: z.string().optional().nullable(),
@@ -429,13 +516,56 @@ router.put("/:id_paciente", async (req, res) => {
         });
 
         const data = schema.parse(req.body);
-        const updateData = { ...data };
+        const updateData = {};
 
+        if (Object.prototype.hasOwnProperty.call(data, "p_nome")) {
+            const nome = String(data.p_nome || "").trim();
+            if (nome.length < 2) throw new Error("Nome inválido.");
+            updateData.p_nome = nome;
+        }
+        if (Object.prototype.hasOwnProperty.call(data, "p_mae")) {
+            updateData.p_mae = normalizeNullableString(data.p_mae);
+        }
         if (Object.prototype.hasOwnProperty.call(data, "p_cpf")) {
+            updateData.p_cpf = normalizeNullableString(data.p_cpf);
             updateData.p_cpf_digits = soDigitos(data.p_cpf) || null;
         }
+        if (Object.prototype.hasOwnProperty.call(data, "p_rg")) {
+            updateData.p_rg = normalizeNullableString(data.p_rg);
+        }
+        if (Object.prototype.hasOwnProperty.call(data, "p_documento")) {
+            updateData.p_documento = normalizeNullableString(data.p_documento);
+        }
+        if (Object.prototype.hasOwnProperty.call(data, "p_sexo")) {
+            updateData.p_sexo = normalizeNullableString(data.p_sexo);
+        }
+        if (Object.prototype.hasOwnProperty.call(data, "p_pai")) {
+            updateData.p_pai = normalizeNullableString(data.p_pai);
+        }
+        if (Object.prototype.hasOwnProperty.call(data, "p_estado_civil")) {
+            updateData.p_estado_civil = normalizeNullableString(data.p_estado_civil);
+        }
+        if (Object.prototype.hasOwnProperty.call(data, "p_profissao")) {
+            updateData.p_profissao = normalizeNullableString(data.p_profissao);
+        }
+        if (Object.prototype.hasOwnProperty.call(data, "p_naturalidade")) {
+            updateData.p_naturalidade = normalizeNullableString(data.p_naturalidade);
+        }
+        if (Object.prototype.hasOwnProperty.call(data, "p_endereco")) {
+            updateData.p_endereco = normalizeNullableString(data.p_endereco);
+        }
+        if (Object.prototype.hasOwnProperty.call(data, "p_cidade")) {
+            updateData.p_cidade = normalizeNullableString(data.p_cidade);
+        }
+        if (Object.prototype.hasOwnProperty.call(data, "p_fone")) {
+            updateData.p_fone = normalizeNullableString(data.p_fone);
+        }
         if (Object.prototype.hasOwnProperty.call(data, "p_nascimento")) {
-            updateData.p_nascimento = data.p_nascimento ? new Date(data.p_nascimento) : null;
+            const nascimento = parseDate(data.p_nascimento);
+            if (data.p_nascimento && nascimento === null) {
+                throw new Error("Data de nascimento inválida.");
+            }
+            updateData.p_nascimento = nascimento;
         }
 
         const paciente = await prisma.paciente.update({
@@ -446,6 +576,14 @@ router.put("/:id_paciente", async (req, res) => {
         res.json(paciente);
     } catch (e) {
         console.error(e);
+        if (e instanceof z.ZodError) {
+            return res.status(400).json({
+                error: e.errors.map((err) => err.message).join("; ") || "Não foi possível atualizar o paciente.",
+            });
+        }
+        if (e instanceof Error) {
+            return res.status(400).json({ error: e.message });
+        }
         res.status(400).json({ error: "Não foi possível atualizar o paciente." });
     }
 });

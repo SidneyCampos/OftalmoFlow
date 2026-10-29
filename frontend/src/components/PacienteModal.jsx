@@ -16,6 +16,11 @@ function normalizeStr(s) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+function normalizeNullableString(value) {
+  const cleaned = String(value || "").trim();
+  return cleaned === "" ? null : cleaned;
+}
+
 function isOftalmoRecord(c) {
   const esp = normalizeStr(c?.c_especialidade);
   if (esp.includes("oftal")) return true;
@@ -65,6 +70,12 @@ export default function PacienteModal({
   const [form, setForm] = useState({
     p_nome: "",
     p_mae: "",
+    p_pai: "",
+    p_sexo: "",
+    p_estado_civil: "",
+    p_profissao: "",
+    p_naturalidade: "",
+    p_documento: "",
     p_cpf: "",
     p_rg: "",
     p_nascimento: "",
@@ -86,6 +97,12 @@ export default function PacienteModal({
       setForm({
         p_nome: p.p_nome || "",
         p_mae: p.p_mae || "",
+        p_pai: p.p_pai || "",
+        p_sexo: p.p_sexo || "",
+        p_estado_civil: p.p_estado_civil || "",
+        p_profissao: p.p_profissao || "",
+        p_naturalidade: p.p_naturalidade || "",
+        p_documento: p.p_documento || "",
         p_cpf: p.p_cpf || "",
         p_rg: p.p_rg || "",
         p_nascimento: dateToInput(p.p_nascimento),
@@ -114,6 +131,12 @@ export default function PacienteModal({
     const original = {
       p_nome: paciente.p_nome || "",
       p_mae: paciente.p_mae || "",
+      p_pai: paciente.p_pai || "",
+      p_sexo: paciente.p_sexo || "",
+      p_estado_civil: paciente.p_estado_civil || "",
+      p_profissao: paciente.p_profissao || "",
+      p_naturalidade: paciente.p_naturalidade || "",
+      p_documento: paciente.p_documento || "",
       p_cpf: paciente.p_cpf || "",
       p_rg: paciente.p_rg || "",
       p_nascimento: dateToInput(paciente.p_nascimento),
@@ -133,6 +156,12 @@ export default function PacienteModal({
     setForm({
       p_nome: paciente.p_nome || "",
       p_mae: paciente.p_mae || "",
+      p_pai: paciente.p_pai || "",
+      p_sexo: paciente.p_sexo || "",
+      p_estado_civil: paciente.p_estado_civil || "",
+      p_profissao: paciente.p_profissao || "",
+      p_naturalidade: paciente.p_naturalidade || "",
+      p_documento: paciente.p_documento || "",
       p_cpf: paciente.p_cpf || "",
       p_rg: paciente.p_rg || "",
       p_nascimento: dateToInput(paciente.p_nascimento),
@@ -152,17 +181,21 @@ export default function PacienteModal({
 
     setSalvando(true);
     try {
-      // Monta payload com os campos do form.
-      // Se quiser permitir limpar campo: mandar "" vira null em alguns casos.
       const payload = {
         p_nome: form.p_nome.trim(),
-        p_mae: form.p_mae?.trim() || null,
-        p_cpf: form.p_cpf?.trim() || null,
-        p_rg: form.p_rg?.trim() || null,
+        p_mae: normalizeNullableString(form.p_mae),
+        p_pai: normalizeNullableString(form.p_pai),
+        p_sexo: normalizeNullableString(form.p_sexo),
+        p_estado_civil: normalizeNullableString(form.p_estado_civil),
+        p_profissao: normalizeNullableString(form.p_profissao),
+        p_naturalidade: normalizeNullableString(form.p_naturalidade),
+        p_documento: normalizeNullableString(form.p_documento),
+        p_cpf: normalizeNullableString(form.p_cpf),
+        p_rg: normalizeNullableString(form.p_rg),
         p_nascimento: form.p_nascimento || null, // YYYY-MM-DD
-        p_fone: form.p_fone?.trim() || null,
-        p_endereco: form.p_endereco?.trim() || null,
-        p_cidade: form.p_cidade?.trim() || null,
+        p_fone: normalizeNullableString(form.p_fone),
+        p_endereco: normalizeNullableString(form.p_endereco),
+        p_cidade: normalizeNullableString(form.p_cidade),
       };
 
       await apiPut(`/api/pacientes/${idPaciente}`, payload);
@@ -173,7 +206,7 @@ export default function PacienteModal({
       if (typeof onMudou === "function") onMudou();
     } catch (e) {
       console.error(e);
-      alert("Erro ao salvar alterações. Veja o console.");
+      alert(`Erro ao salvar alterações. ${e?.message || "Veja o console."}`);
     } finally {
       setSalvando(false);
     }
@@ -312,6 +345,26 @@ export default function PacienteModal({
                       <b>Mãe:</b> {paciente?.p_mae || "-"}
                     </div>
 
+                    <div className="col-md-6">
+                      <b>Pai:</b> {paciente?.p_pai || "-"}
+                    </div>
+                    <div className="col-md-3">
+                      <b>Sexo:</b> {paciente?.p_sexo || "-"}
+                    </div>
+                    <div className="col-md-3">
+                      <b>Estado civil:</b> {paciente?.p_estado_civil || "-"}
+                    </div>
+
+                    <div className="col-md-4">
+                      <b>Documento:</b> {paciente?.p_documento || "-"}
+                    </div>
+                    <div className="col-md-4">
+                      <b>Profissão:</b> {paciente?.p_profissao || "-"}
+                    </div>
+                    <div className="col-md-4">
+                      <b>Naturalidade:</b> {paciente?.p_naturalidade || "-"}
+                    </div>
+
                     <div className="col-md-4">
                       <b>CPF:</b> {paciente?.p_cpf || "-"}
                     </div>
@@ -363,6 +416,99 @@ export default function PacienteModal({
                         value={form.p_mae}
                         onChange={(e) =>
                           setForm({ ...form, p_mae: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label small mb-1">Pai</label>
+                      <input
+                        className="form-control form-control-sm"
+                        value={form.p_pai}
+                        onChange={(e) =>
+                          setForm({ ...form, p_pai: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-4">
+                      <label className="form-label small mb-1">Sexo</label>
+                      <select
+                        className="form-select form-select-sm"
+                        value={form.p_sexo}
+                        onChange={(e) =>
+                          setForm({ ...form, p_sexo: e.target.value })
+                        }
+                      >
+                        <option value="">--</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Feminino">Feminino</option>
+                        <option value="Outro">Outro</option>
+                      </select>
+                    </div>
+
+                    <div className="col-md-4">
+                      <label className="form-label small mb-1">Estado civil</label>
+                      <input
+                        className="form-control form-control-sm"
+                        value={form.p_estado_civil}
+                        onChange={(e) =>
+                          setForm({ ...form, p_estado_civil: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-4">
+                      <label className="form-label small mb-1">Profissão</label>
+                      <input
+                        className="form-control form-control-sm"
+                        value={form.p_profissao}
+                        onChange={(e) =>
+                          setForm({ ...form, p_profissao: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-4">
+                      <label className="form-label small mb-1">Naturalidade</label>
+                      <input
+                        className="form-control form-control-sm"
+                        value={form.p_naturalidade}
+                        onChange={(e) =>
+                          setForm({ ...form, p_naturalidade: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-4">
+                      <label className="form-label small mb-1">Documento</label>
+                      <input
+                        className="form-control form-control-sm"
+                        value={form.p_documento}
+                        onChange={(e) =>
+                          setForm({ ...form, p_documento: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-4">
+                      <label className="form-label small mb-1">Profissão</label>
+                      <input
+                        className="form-control form-control-sm"
+                        value={form.p_profissao}
+                        onChange={(e) =>
+                          setForm({ ...form, p_profissao: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-4">
+                      <label className="form-label small mb-1">Naturalidade</label>
+                      <input
+                        className="form-control form-control-sm"
+                        value={form.p_naturalidade}
+                        onChange={(e) =>
+                          setForm({ ...form, p_naturalidade: e.target.value })
                         }
                       />
                     </div>
